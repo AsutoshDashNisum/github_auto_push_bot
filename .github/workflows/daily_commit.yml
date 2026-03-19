@@ -1,0 +1,28 @@
+name: Daily Auto Commit
+
+on:
+  schedule:
+    - cron: '30 4 * * *' # 10:00 AM IST (04:30 UTC)
+  workflow_dispatch: # Support manual triggering
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to push changes
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update log file
+        run: |
+          date -u +"%Y-%m-%d %H:%M:%S UTC" >> auto_commit_log.txt
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add auto_commit_log.txt
+          CURRENT_DATE=$(date +"%Y-%m-%d")
+          git commit -m "🤖 Daily auto-commit - $CURRENT_DATE" || echo "No changes to commit"
+          git push
